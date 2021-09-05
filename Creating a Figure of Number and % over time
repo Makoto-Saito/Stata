@@ -1,0 +1,68 @@
+* This is a do-file for creating Figures of Number and % over time
+* please replace the following variables with your own 
+* data file: data.dta
+* outcome of interest: outcome
+* time of interest: year
+
+********************************************************************************************
+* load the data
+clear
+use " "$Datadir\data.dta" 
+
+
+*check outcome
+tab outcome, m
+
+***********************************
+*Firstly, let's draw each firgure
+***********************************
+*This is a histogram: number of outcome over time
+hist year, w(1) 
+hist year if outcome==1, w(1) 
+
+*We need the number of outcome and number of total participant each year
+twoway__histogram_gen year, width(1) frequency gen(totalnum year1)
+
+*in order to calculate the proportion, we need to exclude missing
+twoway__histogram_gen year if outcome!=., width(1) frequency gen(denominator year2)
+*numerator = number of outcome
+twoway__histogram_gen year if outcome==1, width(1) frequency gen(numerator year3)
+
+*now the dataset becomes messy. We need only year1 totalnum year2 denominator year3 numerator
+*Be careful. year=year2=year3 in the same raw in this dataset (which may not be true always)  //////////////////////////////////////////////////
+keep year1 totalnum year2 denominator year3 numerator
+
+* labelling the variables
+label var year1 "Year"
+label var year2 "Year"
+label var year3 "Year"
+
+*this is the histrogram we made before. year range:1990-2015.
+twoway bar totalnum year1  if inrange(year1, 1990, 2015), barwidth(1) bstyle(histogram)
+twoway bar numerator year2  if inrange(year2, 1990, 2015), yscale(range(0 1000)) barwidth(1) bstyle(histogram)
+*slightly change the appearance
+twoway bar numerator year2  if inrange(year2, 1990, 2015), yscale(range(0 1000)) barw(5) blc(black) bfc(none) barwidth(1) bstyle(histogram)
+
+****************************
+*combine them in one graph
+****************************
+twoway (bar totalnum year1  if inrange(year1, 1990, 2015), yaxis(1) barw(5) bc(gs11) barwidth(1) bstyle(histogram))(bar numerator year2  if inrange(year2, 1990, 2015), yaxis(2) yscale(range(0 1000)) barw(5) blc(black) bfc(none) barwidth(1) bstyle(histogram)), legend(order(1 "Total Number (left axis)" 2 "Number of outome (right axis)"))
+
+*It might be better to show the total number of participants and the proportion of outcome
+
+***********
+*create proportion of outcome by year
+***********
+gen proportion_outcome=numerator/denominator*100 if year2==year3
+label var proportion_outcome "porportion of outcome (%)"
+twoway line proportion_outcome year2 if inrange(year2, 1990, 2015), yscale(r(0 25)) ylabel(0(5)25)
+
+twoway (bar totalnum year1  if inrange(year1, 1990, 2015), yaxis(1)  barw(5) blc(black) bfc(none) barwidth(1) bstyle(histogram))(line proportion_outcome year2 if inrange(year2, 1990, 2015), yaxis(2) yscale(r(0 25) axis(2))),  ylabel(0(5)25, axis(2)) legend(order(1 "Total Number (left axis)" 2 "Proportion of outcome (right axis)"))
+
+************
+*We can put all three graphs together. 
+************
+* The range of the number of total is about 10-times higher than the range of the number of outcomes, so make the scale similar.
+gen totalnum_per10=totalnum/10
+
+twoway (bar totalnum_per10 year1  if inrange(year1, 1990, 2015), yaxis(1)  barw(5) blc(black) bfc(none) barwidth(1) bstyle(histogram))(line proportion_outcome year2 if inrange(year2, 1990, 2015), yaxis(2) yscale(r(0 25) axis(2))) (line numerator year3 if inrange(year3, 1990, 2015), yaxis(1)),  ytitle("Number", axis(1)) ylabel(0(5)25, axis(2)) legend(order(1 "Total participants/10 (left axis)" 2 "Number of outcome (left axis)" 3 " Proportion of outcome (right axis)" ))
