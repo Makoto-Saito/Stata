@@ -1,0 +1,40 @@
+**************
+* Fixing date in Stata
+**************
+*This do-file is for the situation when date variables are not coded as "date" in Stata.
+*This often happens when the format of the dataset was changed (e.g. from excel to stata, etc).
+
+*******
+* if all dates are stored in string
+*******
+rename date1 date1_original
+gen double date1=date(date1_original, "YMD")
+format date1 %td
+
+*******
+* if all dates are stored as numerical (e.g. 20150101)
+*******
+gen date1_orginal==date1
+tostring date1, replace // change it to string variable
+gen double date2=date(date1, "YMD")
+format date2 %td
+
+*******
+* if some observations have time in addition to date, but the time is not necessary
+*******
+gen date2=substr(date1,1,10) // delete time information. only the first 10 digits are extracted (e.g. 2015/01/01).
+gen double date3=date(date2, "YMD")
+format date3 %td
+rename date1 date1_original
+rename date3 date1
+drop obsdate2
+
+********
+* time is stored with wrong date (which sometimes happens when imported from Excel) and need to be combined with correct date
+********
+format Time0 %tcHH:MM
+generate s = string(Time0,"%tcHH:MM") // this is the correct time
+generate s2 = string(Date0,"%tddd-Mon-YY") // this is the correct date
+egen s3=concat(s2 s), punct(" ") // combine the correct date and correct time (as string variable)
+gen double date0=clock(s3, "DM20Yhm") // change the string variable to time
+format date0 %tc
