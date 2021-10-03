@@ -8,7 +8,7 @@
 * if all dates are stored in string
 *******
 rename date1 date1_original
-gen double date1=date(date1_original, "YMD")
+gen double date1=date(date1_original, "YMD") // YMD needs to be changed if the date is DMY (e.g. 15Nov2019)
 format date1 %td
 
 *******
