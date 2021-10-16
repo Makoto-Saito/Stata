@@ -1,0 +1,12 @@
+*there are some times when we want to handle n and n-1 simultaneously 
+*foreach does not allow you to calculate n-1 automatically
+*for example, if num=5 then `num'-1=5-1, which is not regarded as 4.
+*here is how to handle it
+
+foreach num of numlist 2/6{
+display "`num'th exposure"
+local i=`num'-1
+
+code as you like
+
+}
