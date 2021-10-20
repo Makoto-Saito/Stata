@@ -1,0 +1,13 @@
+*Sometimes blood pressure is recorded as sBP/dBP in a cell (e.g. 120/65)
+*This is not analysis-friendly
+*Let's separate them for analysing the data
+
+*separate sBP and dBP
+generate splitat_bp = strpos(bp,"/") // identify the place separating by /. "bp" is the name for the blood pressure variable
+gen sBP=""
+replace sBP=substr(bp,1,splitat_bp-1)
+gen dBP=""
+replace dBP=substr(bp,splitat_bp+1,.) // "." means until the last digit
+destring sBP dBP, replace
+order sBP dBP, after(bp)
+drop splitat_bp
