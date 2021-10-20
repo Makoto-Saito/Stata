@@ -1,0 +1,10 @@
+*Sometimes missing is expressed as "NULL", "Missing", "NA", "-" etc
+*This prevents the numeric variables to be regarded as numbers
+*Let's fix them.
+
+ds, has(type string) 
+local strvars `r(varlist)' // make variable list of all string variables
+foreach var of varlist  `r(varlist)'{
+replace `var'="" if `var'=="NULL" // in this example, "NULL" is the missing indicator, please replace this with your own indicator.
+}
+destring, replace // this replaces all possible numeric variables that were stored as string variables due to these missing indicators
