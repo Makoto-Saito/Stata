@@ -1,0 +1,15 @@
+*This version is not so flexible but much simpler
+*varX is the variable of interest
+*stratified by year and group
+
+use "$Datadir\XXX.dta" ,clear
+collapse (count) total=varX (sum) event=varX (mean) percent=varX, by(year group)
+
+gen lci = . 
+gen uci = . 
+quietly forval i = 1/`=_N' { 
+    cii proportions `= total[`i']' `= ptb[`i']' 
+    replace uci = r(ub) in `i' 
+    replace lci = r(lb) in `i' 
+} 
+twoway (scatter percent year if group==1)(line percent year if group==1)(rcap lci uci year if group==1)(scatter percent year if group==2)(line percent year if group==2)(rcap lci uci year if group==2)
